@@ -34,8 +34,8 @@ const xtermOptions = computed(() => ({
   cursorStyle: 'block',
   fontSize: 20,
   theme: isDark.value
-    ? Object.assign({}, darkThemeJson, { background: 'oklch(0.145 0 0)' })
-    : lightThemeJson,
+    ? Object.assign({}, darkThemeJson, { background: 'rgba(31, 31, 31, 0.50)' })
+    : Object.assign({}, lightThemeJson, { background: 'rgba(255, 255, 255, 0.50)' }),
 }))
 
 function fitTerm() {
@@ -172,7 +172,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="h-full w-full relative p-2 overflow-hidden">
+  <div class="h-full w-full relative p-2 overflow-hidden backdrop-blur-sm">
     <WelcomeToTerminal v-if="!isConnected" />
     <div v-else id="terminalArea" class="h-full w-full" />
   </div>

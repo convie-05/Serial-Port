@@ -138,7 +138,6 @@ declare module 'vue' {
     Separator: typeof import('./components/ui/separator/Separator.vue')['default']
     SerialRate: typeof import('./components/Dialog/SerialRate.vue')['default']
     SerialSetting: typeof import('./components/SettingPanel/components/DeviceSetting/SerialSetting.vue')['default']
-    SerialWorkspace: typeof import('./components/SerialWorkspace.vue')['default']
     Setting: typeof import('./components/Dialog/Setting.vue')['default']
     Sheet: typeof import('./components/ui/sheet/Sheet.vue')['default']
     SheetClose: typeof import('./components/ui/sheet/SheetClose.vue')['default']

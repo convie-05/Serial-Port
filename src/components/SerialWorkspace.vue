@@ -170,12 +170,12 @@ if (typeof window !== 'undefined') {
       :class="[showFullScreen ? 'w-full' : 'container 2xl:mx-56 py-[40px] lg:py-[100px]']"
     >
       <ActivityBar
-        class="rounded-l-lg rounded-r-none border bg-sidebar"
+        class="rounded-l-lg rounded-r-none border bg-sidebar/55 backdrop-blur-sm"
       />
 
       <div class="w-full h-full flex flex-col">
         <TopBar
-          class="bg-sidebar"
+          class="bg-sidebar/55 backdrop-blur-sm"
           :class="[showFullScreen ? 'border-b' : 'border-t']"
         />
 
@@ -185,7 +185,7 @@ if (typeof window !== 'undefined') {
           :class="{ 'border-t border-r border-b': !showFullScreen }"
         >
           <ResizablePanel ref="settingPanelRef" :default-size="20" :min-size="20" collapsible>
-            <div class="h-full bg-sidebar">
+            <div class="h-full bg-sidebar/55 backdrop-blur-sm">
               <DeviceSetting />
             </div>
           </ResizablePanel>
@@ -195,12 +195,12 @@ if (typeof window !== 'undefined') {
           <ResizablePanel v-if="!showTerminalMode" :default-size="80">
             <ResizablePanelGroup direction="vertical">
               <ResizablePanel :default-size="70">
-                <PlotterPanel v-if="showPlotterMode" class="bg-background w-full h-full" />
-                <RecordPanel v-else class="bg-background w-full h-full" />
+                <PlotterPanel v-if="showPlotterMode" class="bg-background/40 backdrop-blur-sm w-full h-full" />
+                <RecordPanel v-else class="bg-background/40 backdrop-blur-sm w-full h-full" />
               </ResizablePanel>
               <ResizableHandle with-handle />
               <ResizablePanel ref="sendPanelRef" :default-size="30" :min-size="30" collapsible>
-                <div class="flex flex-col bg-background h-full">
+                <div class="flex flex-col bg-background/40 backdrop-blur-sm h-full">
                   <ControlPanel />
                   <SendPanel class="flex-1" />
                 </div>
@@ -213,11 +213,11 @@ if (typeof window !== 'undefined') {
           </ResizablePanel>
         </ResizablePanelGroup>
 
-        <StatusBar class="bg-sidebar border-r border-b border-t" />
+        <StatusBar class="bg-sidebar/55 backdrop-blur-sm border-r border-b border-t" />
       </div>
       <div
         v-if="showQuickInputPanel && !showTerminalMode"
-        class="h-full bg-sidebar max-w-150 w-full border-l"
+        class="h-full bg-sidebar/55 backdrop-blur-sm max-w-150 w-full border-l"
         :class="[showFullScreen ? '' : 'rounded-r-lg border']"
       >
         <QuickInputPanel />
