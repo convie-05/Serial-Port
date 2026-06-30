@@ -65,25 +65,37 @@ const nodeElements = computed(() => {
   })
 })
 
-// 连线渲染数据
+// 连线渲染数据：自动将控制器与所有执行器用线连接
 const linkElements = computed(() => {
-  return store.bindings.value.map((b) => {
-    const ctrl = store.nodes.value.find(n => n.id === b.controllerId)
-    const act = store.nodes.value.find(n => n.id === b.actuatorId)
-    if (!ctrl || !act)
-      return null
+  const controllers = store.controllers.value
+  const actuators = store.actuators.value
+  if (controllers.length === 0 || actuators.length === 0)
+    return []
 
-    const ctrlPos = store.getNodePosition(ctrl.id)
+  const ctrl = controllers[0]
+  const ctrlPos = store.getNodePosition(ctrl.id)
+  if (!ctrlPos)
+    return []
+
+  const nodeR = 24
+  return actuators.map((act) => {
     const actPos = store.getNodePosition(act.id)
-    if (!ctrlPos || !actPos)
+    if (!actPos)
       return null
 
+    const dx = actPos.x - ctrlPos.x
+    const dy = actPos.y - ctrlPos.y
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1
+    const ux = dx / dist
+    const uy = dy / dist
+
+    // 起点从控制器边缘出发，终点在执行器边缘前预留箭头空间
     return {
-      id: b.id,
-      x1: ctrlPos.x,
-      y1: ctrlPos.y,
-      x2: actPos.x,
-      y2: actPos.y,
+      id: `link_${ctrl.id}_${act.id}`,
+      x1: ctrlPos.x + ux * nodeR,
+      y1: ctrlPos.y + uy * nodeR,
+      x2: actPos.x - ux * (nodeR + 8),
+      y2: actPos.y - uy * (nodeR + 8),
     }
   }).filter(Boolean)
 })
@@ -147,7 +159,7 @@ function onPointerUp() {
     </defs>
 
     <!-- 连线 -->
-    <g v-if="store.bindings.value.length > 0">
+    <g v-if="linkElements.length > 0">
       <line
         v-for="link in linkElements"
         :key="link.id"
