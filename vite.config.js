@@ -12,7 +12,7 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
-    base: '/Serial-Port1.github.io/',
+    base: '/Serial-Port.github.io/',
     plugins: [
       vue(),
 

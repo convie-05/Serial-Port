@@ -7,7 +7,7 @@ import Menu from './Menu.vue'
     <div class="flex gap-x-2">
       <Menu />
       <div class="flex-1" />
-      <a href="https://github.com/convie-05/Serial-Port1.github.io" target="_blank">
+      <a href="https://github.com/convie-05/Serial-Port.github.io" target="_blank">
         <label class="btn btn-square btn-ghost">
           <img src="/github.svg" class="w-7 h-7">
         </label>
