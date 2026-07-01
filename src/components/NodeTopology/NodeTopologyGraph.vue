@@ -1,5 +1,6 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, toRef, watch } from 'vue'
+import { useNodeForceLayout } from '@/composables/useNodeForceLayout'
 import { useNodeStore } from '@/store/useNodeStore'
 
 const props = defineProps({
@@ -11,6 +12,26 @@ const emit = defineEmits(['nodeClick', 'nodeDblclick'])
 
 const store = useNodeStore()
 const svgRef = ref(null)
+
+// 力布局开关
+const forceEnabled = ref(false)
+
+// 拖拽状态（需在 useNodeForceLayout 之前定义）
+const dragging = ref(null)
+let dragStartX = 0
+let dragStartY = 0
+let nodeStartX = 0
+let nodeStartY = 0
+
+const { positions: simPositions, stop, updatePosition } = useNodeForceLayout({
+  nodes: store.nodes,
+  bindings: store.bindings,
+  width: toRef(props, 'width'),
+  height: toRef(props, 'height'),
+  enabled: forceEnabled,
+  pinnedId: dragging,
+  getInitialPosition: id => store.getNodePosition(id),
+})
 
 // 布局：根据节点数量自动分配位置
 function autoLayout() {
@@ -37,17 +58,42 @@ function autoLayout() {
 
 onMounted(() => {
   autoLayout()
+  // 初始化位置同步到模拟器后再开启力布局
+  nextTick(() => {
+    forceEnabled.value = true
+  })
 })
 
-// 节点新增/删除时自动补位，避免依赖外层强制 key 重挂载
+onUnmounted(() => {
+  stop()
+  // 批量保存最终位置
+  Object.entries(simPositions.value).forEach(([id, p]) => {
+    store.updateNodePosition(id, p.x, p.y)
+  })
+})
+
+// 节点新增/删除时自动补位
 watch(() => store.nodes.value.length, () => {
   autoLayout()
 })
 
+// 外部 store 位置同步到模拟器（首次加载 / 新增节点）
+watch(() => store.nodePositions.value, (stored) => {
+  store.nodes.value.forEach((n) => {
+    if (stored[n.id] && !simPositions.value[n.id]) {
+      updatePosition(n.id, stored[n.id].x, stored[n.id].y)
+    }
+  })
+}, { deep: true, immediate: true })
+
+function getPos(id) {
+  return simPositions.value[id] || store.getNodePosition(id) || { x: props.width / 2, y: props.height / 2 }
+}
+
 // 节点在画布上的渲染数据
 const nodeElements = computed(() => {
   return store.nodes.value.map((node) => {
-    const pos = store.getNodePosition(node.id) || { x: props.width / 2, y: props.height / 2 }
+    const pos = getPos(node.id)
     const isController = node.type === 'controller'
     return {
       id: node.id,
@@ -65,22 +111,13 @@ const nodeElements = computed(() => {
   })
 })
 
-// 连线渲染数据：自动将控制器与所有执行器用线连接
+// 连线渲染数据：基于 binding 关系
 const linkElements = computed(() => {
-  const controllers = store.controllers.value
-  const actuators = store.actuators.value
-  if (controllers.length === 0 || actuators.length === 0)
-    return []
-
-  const ctrl = controllers[0]
-  const ctrlPos = store.getNodePosition(ctrl.id)
-  if (!ctrlPos)
-    return []
-
   const nodeR = 24
-  return actuators.map((act) => {
-    const actPos = store.getNodePosition(act.id)
-    if (!actPos)
+  return store.bindings.value.map((b) => {
+    const ctrlPos = getPos(b.controllerId)
+    const actPos = getPos(b.actuatorId)
+    if (!ctrlPos || !actPos)
       return null
 
     const dx = actPos.x - ctrlPos.x
@@ -89,9 +126,8 @@ const linkElements = computed(() => {
     const ux = dx / dist
     const uy = dy / dist
 
-    // 起点从控制器边缘出发，终点在执行器边缘前预留箭头空间
     return {
-      id: `link_${ctrl.id}_${act.id}`,
+      id: b.id,
       x1: ctrlPos.x + ux * nodeR,
       y1: ctrlPos.y + uy * nodeR,
       x2: actPos.x - ux * (nodeR + 8),
@@ -100,15 +136,8 @@ const linkElements = computed(() => {
   }).filter(Boolean)
 })
 
-// 拖拽
-const dragging = ref(null)
-let dragStartX = 0
-let dragStartY = 0
-let nodeStartX = 0
-let nodeStartY = 0
-
 function onPointerDown(e, nodeId) {
-  const pos = store.getNodePosition(nodeId)
+  const pos = getPos(nodeId)
   if (!pos)
     return
   dragging.value = nodeId
@@ -127,6 +156,7 @@ function onPointerMove(e) {
   const dy = e.clientY - dragStartY
   const newX = Math.max(30, Math.min(props.width - 30, nodeStartX + dx))
   const newY = Math.max(30, Math.min(props.height - 30, nodeStartY + dy))
+  updatePosition(dragging.value, newX, newY)
   store.updateNodePosition(dragging.value, newX, newY)
 }
 
@@ -157,6 +187,18 @@ function onPointerUp() {
         <polygon points="0 0, 10 3.5, 0 7" fill="#6366f1" />
       </marker>
     </defs>
+
+    <!-- 力布局开关 -->
+    <foreignObject x="8" y="8" width="120" height="32">
+      <div class="flex items-center">
+        <button
+          class="px-2 py-1 text-xs rounded border bg-background/80 hover:bg-background transition-colors"
+          @click="forceEnabled = !forceEnabled"
+        >
+          {{ forceEnabled ? '关闭力布局' : '开启力布局' }}
+        </button>
+      </div>
+    </foreignObject>
 
     <!-- 连线 -->
     <g v-if="linkElements.length > 0">

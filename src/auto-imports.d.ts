@@ -227,6 +227,7 @@ declare global {
   const useNavigatorLanguage: typeof import('@vueuse/core')['useNavigatorLanguage']
   const useNetwork: typeof import('@vueuse/core')['useNetwork']
   const useNodeAutoScan: typeof import('./composables/useNodeAutoScan/index.js')['useNodeAutoScan']
+  const useNodeForceLayout: typeof import('./composables/useNodeForceLayout/index.js')['useNodeForceLayout']
   const useNodeProtocol: typeof import('./composables/useNodeProtocol/index.js')['useNodeProtocol']
   const useNow: typeof import('@vueuse/core')['useNow']
   const useNprogress: typeof import('./composables/useNprogress/index.js')['useNprogress']
@@ -552,6 +553,7 @@ declare module 'vue' {
     readonly useNavigatorLanguage: UnwrapRef<typeof import('@vueuse/core')['useNavigatorLanguage']>
     readonly useNetwork: UnwrapRef<typeof import('@vueuse/core')['useNetwork']>
     readonly useNodeAutoScan: UnwrapRef<typeof import('./composables/useNodeAutoScan/index.js')['useNodeAutoScan']>
+    readonly useNodeForceLayout: UnwrapRef<typeof import('./composables/useNodeForceLayout/index.js')['useNodeForceLayout']>
     readonly useNodeProtocol: UnwrapRef<typeof import('./composables/useNodeProtocol/index.js')['useNodeProtocol']>
     readonly useNow: UnwrapRef<typeof import('@vueuse/core')['useNow']>
     readonly useNprogress: UnwrapRef<typeof import('./composables/useNprogress/index.js')['useNprogress']>
